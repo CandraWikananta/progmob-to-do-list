@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_tasks"
+        android:icon="@drawable/task_icon"
+        android:title="Tasks"/>
+    <item
+        android:id="@+id/nav_calendar"
+        android:icon="@drawable/calendar_icon"
+        android:title="Calendar"/>
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/profile_ic"
+        android:title="Profile"/>
+</menu>
