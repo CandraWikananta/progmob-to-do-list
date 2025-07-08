@@ -40,6 +40,9 @@
         <activity
             android:name=".LandingPageActivity"
             android:exported="false" />
+        <activity
+            android:name=".CreateTaskActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
