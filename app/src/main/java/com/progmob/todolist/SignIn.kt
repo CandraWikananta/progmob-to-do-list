@@ -19,7 +19,7 @@ class SignIn : AppCompatActivity() {
 
         val signInName: EditText = findViewById(R.id.signInName)
         val signInPassword: EditText = findViewById(R.id.signInPassword)
-        val coninueButton: Button = findViewById(R.id.continueButton)
+        val coninueButton: Button = findViewById(R.id.signInButton)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.signInForm)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

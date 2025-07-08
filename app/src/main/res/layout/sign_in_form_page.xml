@@ -33,32 +33,31 @@
         android:src="@drawable/login" />
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="140dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:layout_alignParentBottom="true"
-        android:padding="10dp"
-        android:layout_marginBottom="140dp"
-        >
+        android:padding="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="10dp"
-            >
+            android:padding="10dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Name"
+                android:textColor="#D32F2F"
                 android:textSize="20dp"
-                android:textStyle="bold"
-                android:textColor="#D32F2F"/>
+                android:textStyle="bold" />
 
-            <com.google.android.material.textfield.TextInputEditText
+            <EditText
                 android:id="@+id/signInName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -66,7 +65,7 @@
                 android:hint="Your Full Name"
                 android:padding="10dp"
                 android:textColor="#000000"
-                android:textColorHint="#888888"/>
+                android:textColorHint="#888888" />
 
         </LinearLayout>
 
@@ -75,18 +74,17 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="10dp"
-            >
+            android:padding="10dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Password"
+                android:textColor="#D32F2F"
                 android:textSize="20dp"
-                android:textStyle="bold"
-                android:textColor="#D32F2F"/>
+                android:textStyle="bold" />
 
-            <com.google.android.material.textfield.TextInputEditText
+            <EditText
                 android:id="@+id/signInPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -94,7 +92,7 @@
                 android:hint="Your Password"
                 android:padding="10dp"
                 android:textColor="#000000"
-                android:textColorHint="#888888"/>
+                android:textColorHint="#888888" />
 
         </LinearLayout>
 
@@ -102,16 +100,25 @@
 
 
     <Button
-        android:id="@+id/continueButton"
+        android:id="@+id/signInButton"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_alignParentBottom="true"
         android:layout_marginTop="60dp"
         android:layout_marginBottom="85dp"
         android:background="#D32F2F"
-        android:text="Continue"
+        android:text="Sign In"
         android:textColor="#FFFFFF" />
 
+    <TextView
+        android:id="@+id/goTosignUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/linearLayout"
+        android:layout_marginTop="306dp"
+        android:gravity="center"
+        android:text="Don't have an account? Sign Up"
+        android:textColor="@color/dark_grey" />
 
 </RelativeLayout>
 

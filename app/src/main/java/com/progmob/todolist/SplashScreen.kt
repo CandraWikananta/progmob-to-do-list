@@ -10,7 +10,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class SplashScreenPage : AppCompatActivity() {
+class SplashScreen : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
@@ -27,5 +27,12 @@ class SplashScreenPage : AppCompatActivity() {
             startActivity(Intent(this, WelcomePage::class.java))
             finish()
         }, 2000)
+    }
+
+    private fun goToMainActivity() {
+        Intent(this, MainActivity::class.java).also{
+            startActivity(it)
+            finish()
+        }
     }
 }
