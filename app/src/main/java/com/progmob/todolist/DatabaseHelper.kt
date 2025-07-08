@@ -11,7 +11,7 @@ class DatabaseHelper (private val context: Context):
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION){
     companion object{
         private const val DATABASE_NAME = "toDoList.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 3
 
         // Tabel User
         private const val USER_TABLE = "user_tb"
@@ -36,6 +36,7 @@ class DatabaseHelper (private val context: Context):
         private const val TASK_PRIORITY = "priority"
         private const val TASK_DUE_DATE = "due_date"
         private const val TASK_DUE_TIME = "due_time"
+        private const val TASK_COMPLETED = "completed"
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
@@ -66,6 +67,7 @@ class DatabaseHelper (private val context: Context):
                 $TASK_PRIORITY TEXT,
                 $TASK_DUE_DATE DATE,
                 $TASK_DUE_TIME DATETIME,
+                $TASK_COMPLETED INTEGER DEFAULT 0,
                 FOREIGN KEY ($TASK_USER_ID) REFERENCES $USER_TABLE($USER_ID),
                 FOREIGN KEY ($TASK_CATEGORY_ID) REFERENCES $CATEGORY_TABLE($CATEGORY_ID)
             )
@@ -124,6 +126,7 @@ class DatabaseHelper (private val context: Context):
             put("priority", priority)
             put("due_date", dueDate)
             put("due_time", dueTime)
+            put("completed", 0)
         }
         return db.insert("task_tb", null, values)
     }
@@ -161,4 +164,66 @@ class DatabaseHelper (private val context: Context):
         val db = writableDatabase
         return db.delete(TASK_TABLE, "$TASK_ID = ?", arrayOf(taskId.toString()))
     }
+
+    // update kolom completed jika di centang
+    fun updateTaskCompleted(taskId: Int, completed: Boolean): Int {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put("completed", if (completed) 1 else 0)
+        }
+        return db.update("task_tb", values, "id=?", arrayOf(taskId.toString()))
+    }
+
+    // ambil task sudah selesai
+    fun getCompletedTasks(userId: Int): Cursor {
+        val db = readableDatabase
+        return db.rawQuery(
+            "SELECT * FROM $TASK_TABLE WHERE $TASK_USER_ID = ? AND $TASK_COMPLETED = 1",
+            arrayOf(userId.toString())
+        )
+    }
+
+    // ambil task belum selesai
+    fun getIncompleteTasks(userId: Int): Cursor {
+        val db = readableDatabase
+        return db.rawQuery(
+            "SELECT * FROM $TASK_TABLE WHERE $TASK_USER_ID = ? AND $TASK_COMPLETED = 0",
+            arrayOf(userId.toString())
+        )
+    }
+
+    // ambil semua task yang sudah di centang
+    fun getAllTasksWithCompletion(userId: Int): List<TaskModel> {
+        val taskList = mutableListOf<TaskModel>()
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $TASK_TABLE WHERE $TASK_USER_ID = ?", arrayOf(userId.toString()))
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+                val title = cursor.getString(cursor.getColumnIndexOrThrow("title"))
+                val description = cursor.getString(cursor.getColumnIndexOrThrow("description"))
+                val categoryId = cursor.getInt(cursor.getColumnIndexOrThrow("category_id"))
+                val priority = cursor.getString(cursor.getColumnIndexOrThrow("priority"))
+                val dueDate = cursor.getString(cursor.getColumnIndexOrThrow("due_date"))
+                val dueTime = cursor.getString(cursor.getColumnIndexOrThrow("due_time"))
+                val completed = cursor.getInt(cursor.getColumnIndexOrThrow("completed")) == 1
+
+                val categoryName = when (categoryId) {
+                    1 -> "Personal"
+                    2 -> "Kuliah"
+                    3 -> "Kerja"
+                    else -> "Lainnya"
+                }
+
+                taskList.add(
+                    TaskModel(id, title, description, categoryName, priority, dueDate, dueTime, completed)
+                )
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return taskList
+    }
+
+
 }

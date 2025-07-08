@@ -7,5 +7,6 @@ data class TaskModel(
     val category: String,
     val priority: String,
     val dueDate: String,
-    val dueTime: String
+    val dueTime: String,
+    var completed: Boolean
 )

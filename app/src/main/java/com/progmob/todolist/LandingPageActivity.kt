@@ -38,6 +38,7 @@ class LandingPageActivity : AppCompatActivity() {
                 val priority = cursor.getString(cursor.getColumnIndexOrThrow("priority"))
                 val dueDate = cursor.getString(cursor.getColumnIndexOrThrow("due_date"))
                 val dueTime = cursor.getString(cursor.getColumnIndexOrThrow("due_time"))
+                val completed = cursor.getInt(cursor.getColumnIndexOrThrow("completed")) == 1
 
                 val categoryName = when (category) {
                     1 -> "Personal"
@@ -46,7 +47,7 @@ class LandingPageActivity : AppCompatActivity() {
                     else -> "Lainnya"
                 }
 
-                taskList.add(TaskModel(id, title, description, categoryName, priority, dueDate, dueTime))
+                taskList.add(TaskModel(id, title, description, categoryName, priority, dueDate, dueTime, completed))
             } while (cursor.moveToNext())
         }
         cursor.close()
@@ -61,7 +62,7 @@ class LandingPageActivity : AppCompatActivity() {
             binding.emptyText.visibility = android.view.View.VISIBLE
         }
 
-        val adapter = TaskAdapter(taskList) { task ->
+        val adapter = TaskAdapter(taskList.toMutableList()) { task ->
             val intent = Intent(this, DetailTaskActivity::class.java)
             intent.putExtra("TASK_ID", task.id)
             startActivity(intent)
