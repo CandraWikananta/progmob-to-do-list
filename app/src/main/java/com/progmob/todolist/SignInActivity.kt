@@ -9,13 +9,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import java.util.jar.Attributes.Name
 
-class SignIn : AppCompatActivity() {
+class SignInActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.sign_in_form_page)
+        setContentView(R.layout.activity_sign_in)
 
         val signInName: EditText = findViewById(R.id.signInName)
         val signInPassword: EditText = findViewById(R.id.signInPassword)
@@ -38,7 +37,7 @@ class SignIn : AppCompatActivity() {
                 
                 
                 if (enteredName == savedName && enteredPassword == savedPassword) {
-                    val intent = Intent(this, LandingPage::class.java)
+                    val intent = Intent(this, LandingPageActivity::class.java)
                     startActivity(intent)
                     finish()
                 } else  {
