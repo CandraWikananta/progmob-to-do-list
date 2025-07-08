@@ -17,6 +17,9 @@ class EditTaskActivity : AppCompatActivity() {
 
     private var taskId: Int = -1
 
+    private val categories = listOf("Personal", "Kuliah", "Kerja")
+    private val priorities = listOf("Low", "Medium", "High")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditTaskBinding.inflate(layoutInflater)
@@ -30,28 +33,28 @@ class EditTaskActivity : AppCompatActivity() {
             finish()
         }
 
-        loadTaskData(taskId)
+        // Spinner: Category
+        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerCategory.adapter = categoryAdapter
 
-        val priorities = arrayOf("Low", "Medium", "High")
+        // Spinner: Priority
         val priorityAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, priorities)
         priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerPriority.adapter = priorityAdapter
 
-        binding.inputDueDate.setOnClickListener {
-            showDatePicker()
-        }
+        // Load data dari DB
+        loadTaskData(taskId)
 
-        binding.inputTime.setOnClickListener {
-            showTimePicker()
-        }
+        // Date & Time Picker
+        binding.inputDueDate.setOnClickListener { showDatePicker() }
+        binding.inputTime.setOnClickListener { showTimePicker() }
 
-        binding.btnUpdateTask.setOnClickListener {
-            updateTask()
-        }
+        // Button: Update
+        binding.btnUpdateTask.setOnClickListener { updateTask() }
 
-        binding.backButton.setOnClickListener {
-            finish()
-        }
+        // Button: Back
+        binding.backButton.setOnClickListener { finish() }
     }
 
     private fun loadTaskData(id: Int) {
@@ -62,19 +65,25 @@ class EditTaskActivity : AppCompatActivity() {
             val priority = cursor.getString(cursor.getColumnIndexOrThrow("priority"))
             val dueDate = cursor.getString(cursor.getColumnIndexOrThrow("due_date"))
             val dueTime = cursor.getString(cursor.getColumnIndexOrThrow("due_time"))
+            val categoryId = cursor.getInt(cursor.getColumnIndexOrThrow("category_id"))
+
+            val categoryName = when (categoryId) {
+                1 -> "Personal"
+                2 -> "Kuliah"
+                3 -> "Kerja"
+                else -> "Lainnya"
+            }
 
             binding.inputTitle.setText(title)
             binding.inputDescription.setText(description)
             binding.inputDueDate.setText(dueDate)
             binding.inputTime.setText(dueTime)
 
-            val priorityIndex = when (priority) {
-                "Low" -> 0
-                "Medium" -> 1
-                "High" -> 2
-                else -> 0
-            }
-            binding.spinnerPriority.setSelection(priorityIndex)
+            val priorityIndex = priorities.indexOf(priority)
+            if (priorityIndex >= 0) binding.spinnerPriority.setSelection(priorityIndex)
+
+            val categoryIndex = categories.indexOf(categoryName)
+            if (categoryIndex >= 0) binding.spinnerCategory.setSelection(categoryIndex)
         }
         cursor.close()
     }
@@ -86,9 +95,10 @@ class EditTaskActivity : AppCompatActivity() {
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
         val datePicker = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
-            val dateString = String.format("%02d/%02d/%04d", selectedDay, selectedMonth + 1, selectedYear)
+            val dateString = String.format("%02d-%02d-%04d", selectedDay, selectedMonth + 1, selectedYear)
             binding.inputDueDate.setText(dateString)
         }, year, month, day)
+
         datePicker.show()
     }
 
@@ -101,6 +111,7 @@ class EditTaskActivity : AppCompatActivity() {
             val timeString = String.format("%02d:%02d", selectedHour, selectedMinute)
             binding.inputTime.setText(timeString)
         }, hour, minute, true)
+
         timePicker.show()
     }
 
@@ -110,13 +121,28 @@ class EditTaskActivity : AppCompatActivity() {
         val priority = binding.spinnerPriority.selectedItem.toString()
         val dueDate = binding.inputDueDate.text.toString()
         val dueTime = binding.inputTime.text.toString()
+        val category = binding.spinnerCategory.selectedItem.toString()
 
-        val result = databaseHelper.updateTask(taskId, title, description, priority, dueDate, dueTime)
+        val categoryId = when (category) {
+            "Personal" -> 1
+            "Kuliah" -> 2
+            "Kerja" -> 3
+            else -> 0
+        }
+
+        val result = databaseHelper.updateTask(
+            taskId,
+            title,
+            description,
+            priority,
+            dueDate,
+            dueTime,
+            categoryId
+        )
 
         if (result > 0) {
             Toast.makeText(this, "Task berhasil diperbarui", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, LandingPageActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, LandingPageActivity::class.java))
             finish()
         } else {
             Toast.makeText(this, "Gagal memperbarui task", Toast.LENGTH_SHORT).show()

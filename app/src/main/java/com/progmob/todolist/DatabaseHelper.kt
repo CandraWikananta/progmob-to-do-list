@@ -142,24 +142,19 @@ class DatabaseHelper (private val context: Context):
     }
 
     // Update Task
-    fun updateTask(
-        taskId: Int,
-        title: String,
-        description: String,
-        priority: String,
-        dueDate: String,
-        dueTime: String
-    ): Int {
-        val values = ContentValues().apply {
-            put(TASK_TITLE, title)
-            put(TASK_DESCRIPTION, description)
-            put(TASK_PRIORITY, priority)
-            put(TASK_DUE_DATE, dueDate)
-            put(TASK_DUE_TIME, dueTime)
-        }
-        val db = writableDatabase
-        return db.update(TASK_TABLE, values, "$TASK_ID = ?", arrayOf(taskId.toString()))
+    fun updateTask(id: Int, title: String, desc: String, priority: String, date: String, time: String, categoryId: Int): Int {
+        val db = this.writableDatabase
+        val contentValues = ContentValues()
+        contentValues.put("title", title)
+        contentValues.put("description", desc)
+        contentValues.put("priority", priority)
+        contentValues.put("due_date", date)
+        contentValues.put("due_time", time)
+        contentValues.put("category_id", categoryId)
+
+        return db.update("task_tb", contentValues, "id=?", arrayOf(id.toString()))
     }
+
 
     // Delete Task
     fun deleteTask(taskId: Int): Int {
