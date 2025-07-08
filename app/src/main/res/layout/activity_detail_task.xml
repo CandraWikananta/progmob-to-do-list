@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA"
+    android:padding="24dp"
+    tools:context=".DetailTaskActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Back Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/arrow_left"
+                android:layout_gravity="center_vertical"/>
+
+            <TextView
+                android:id="@+id/backButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Back"
+                android:textColor="#EF1D26"
+                android:textSize="14sp"
+                android:layout_marginStart="8dp"
+                android:layout_gravity="center_vertical" />
+        </LinearLayout>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/taskTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Judul Task"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Description -->
+        <TextView
+            android:text="Description:"
+            android:textStyle="bold"
+            android:textColor="#666666"
+            android:layout_marginBottom="4dp"/>
+        <TextView
+            android:id="@+id/taskDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Deskripsi Task"
+            android:textColor="#000000"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Category -->
+        <TextView
+            android:text="Category:"
+            android:textStyle="bold"
+            android:textColor="#666666"
+            android:layout_marginBottom="4dp"/>
+        <TextView
+            android:id="@+id/taskCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kuliah"
+            android:textColor="#000000"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Priority -->
+        <TextView
+            android:text="Priority:"
+            android:textStyle="bold"
+            android:textColor="#666666"
+            android:layout_marginBottom="4dp"/>
+        <TextView
+            android:id="@+id/taskPriority"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="High"
+            android:textColor="#000000"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Due Date -->
+        <TextView
+            android:text="Due Date:"
+            android:textStyle="bold"
+            android:textColor="#666666"
+            android:layout_marginBottom="4dp"/>
+        <TextView
+            android:id="@+id/taskDueDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="16 June 2024"
+            android:textColor="#000000"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Due Time -->
+        <TextView
+            android:text="Due Time:"
+            android:textStyle="bold"
+            android:textColor="#666666"
+            android:layout_marginBottom="4dp"/>
+        <TextView
+            android:id="@+id/taskDueTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="03:00 WITA"
+            android:textColor="#000000"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btnEditTask"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="#FFA000"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnDeleteTask"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete"
+                android:backgroundTint="#EF1D26"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -1,14 +1,18 @@
 package com.progmob.todolist
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.progmob.todolist.databinding.ActivityCreateTaskBinding
+import java.util.Calendar
 
 class CreateTaskActivity : AppCompatActivity() {
 
@@ -23,11 +27,88 @@ class CreateTaskActivity : AppCompatActivity() {
 
         databaseHelper = DatabaseHelper(this)
 
-        // tombol back
-        binding.backButton.setOnClickListener{
-            val intent = Intent(this, LandingPageActivity::class.java)
-            startActivity(intent)
+        // Tombol back
+        binding.backButton.setOnClickListener {
+            startActivity(Intent(this, LandingPageActivity::class.java))
             finish()
+        }
+
+        // Spinner data
+        val categories = arrayOf("Personal", "Kuliah", "Kerja")
+        val priorities = arrayOf("Low", "Medium", "High")
+
+        // Set adapter category
+        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerCategory.adapter = categoryAdapter
+
+        // Set adapter priority
+        val priorityAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, priorities)
+        priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerPriority.adapter = priorityAdapter
+
+        // Date Picker
+        val calendar = Calendar.getInstance()
+        binding.inputDueDate.setOnClickListener {
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+            DatePickerDialog(this, { _, y, m, d ->
+                val formatted = String.format("%02d-%02d-%04d", d, m + 1, y)
+                binding.inputDueDate.setText(formatted)
+            }, year, month, day).show()
+        }
+
+        // Time Picker
+        binding.inputTime.setOnClickListener {
+            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+            val minute = calendar.get(Calendar.MINUTE)
+
+            TimePickerDialog(this, { _, h, m ->
+                val formatted = String.format("%02d:%02d", h, m)
+                binding.inputTime.setText(formatted)
+            }, hour, minute, true).show()
+        }
+
+        // Tombol Add Task
+        binding.btnAddTask.setOnClickListener {
+            val title = binding.inputTitle.text.toString()
+            val description = binding.inputDescription.text.toString()
+            val category = binding.spinnerCategory.selectedItem.toString()
+            val priority = binding.spinnerPriority.selectedItem.toString()
+            val dueDate = binding.inputDueDate.text.toString()
+            val dueTime = binding.inputTime.text.toString()
+
+            // Ambil user ID dari SharedPreferences
+            val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+            val userId = sharedPref.getInt("user_id", -1)
+
+            if (userId == -1) {
+                Toast.makeText(this, "User belum login!", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, SignInActivity::class.java))
+                finish()
+                return@setOnClickListener
+            }
+
+            val categoryId = when (category) {
+                "Personal" -> 1
+                "Kuliah" -> 2
+                "Kerja" -> 3
+                else -> 0
+            }
+
+            val result = databaseHelper.insertTask(
+                userId, categoryId, title, description, priority, dueDate, dueTime
+            )
+
+            if (result != -1L) {
+                Toast.makeText(this, "Task berhasil ditambahkan!", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, LandingPageActivity::class.java))
+                finish()
+            } else {
+                Toast.makeText(this, "Gagal menambahkan task", Toast.LENGTH_SHORT).show()
+            }
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -35,18 +116,5 @@ class CreateTaskActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        // Di dalam onCreate()
-        val categorySpinner: Spinner = findViewById(R.id.spinnerCategory)
-        val prioritySpinner: Spinner = findViewById(R.id.spinnerPriority)
-
-// Data Spinner
-        val categories = arrayOf("Personal", "Kuliah", "Kerja")
-        val priorities = arrayOf("Low", "Medium", "High")
-
-// Adapter Category
-        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        categorySpinner.adapter = categoryAdapter
     }
 }

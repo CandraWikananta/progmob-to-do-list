@@ -13,6 +13,12 @@
         android:theme="@style/Theme.Todolist"
         tools:targetApi="31">
         <activity
+            android:name=".EditTaskActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DetailTaskActivity"
+            android:exported="false" />
+        <activity
             android:name=".SplashScreenActivity"
             android:exported="true">
             <intent-filter>
@@ -33,7 +39,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:theme="@style/Theme.Todolist"/>
+            android:theme="@style/Theme.Todolist" />
         <activity
             android:name=".WelcomePageActivity"
             android:exported="false" />

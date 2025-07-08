@@ -2,6 +2,7 @@ package com.progmob.todolist
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
@@ -96,14 +97,73 @@ class DatabaseHelper (private val context: Context):
         return db.insert(USER_TABLE, null, values)
     }
 
-    fun readUser(username: String, password: String): Boolean{
-        val db = readableDatabase
-        val selection = "$USER_NAME = ? AND $USER_PASSWORD = ?"
-        val selectionArgs = arrayOf(username, password)
-        val cursor = db.query(USER_TABLE, null, selection, selectionArgs,null, null, null)
+    fun getUserId(username: String, password: String): Int {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT id FROM $USER_TABLE WHERE $USER_NAME = ? AND $USER_PASSWORD = ?",
+            arrayOf(username, password)
+        )
 
-        val userExists = cursor.count > 0
+        var userId = -1
+        if (cursor.moveToFirst()) {
+            userId = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+        }
         cursor.close()
-        return userExists
+        return userId
+    }
+
+
+    // Insert Task
+    fun insertTask(userId: Int, categoryId: Int, title: String, description: String, priority: String, dueDate: String, dueTime: String): Long {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put("user_id", userId)
+            put("category_id", categoryId)
+            put("title", title)
+            put("description", description)
+            put("priority", priority)
+            put("due_date", dueDate)
+            put("due_time", dueTime)
+        }
+        return db.insert("task_tb", null, values)
+    }
+
+
+    // Get all tasks (by user)
+    fun getAllTasks(userId: Int): Cursor {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $TASK_TABLE WHERE $TASK_USER_ID = ?", arrayOf(userId.toString()))
+    }
+
+    // Get task by ID
+    fun getTaskById(taskId: Int): Cursor {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $TASK_TABLE WHERE $TASK_ID = ?", arrayOf(taskId.toString()))
+    }
+
+    // Update Task
+    fun updateTask(
+        taskId: Int,
+        title: String,
+        description: String,
+        priority: String,
+        dueDate: String,
+        dueTime: String
+    ): Int {
+        val values = ContentValues().apply {
+            put(TASK_TITLE, title)
+            put(TASK_DESCRIPTION, description)
+            put(TASK_PRIORITY, priority)
+            put(TASK_DUE_DATE, dueDate)
+            put(TASK_DUE_TIME, dueTime)
+        }
+        val db = writableDatabase
+        return db.update(TASK_TABLE, values, "$TASK_ID = ?", arrayOf(taskId.toString()))
+    }
+
+    // Delete Task
+    fun deleteTask(taskId: Int): Int {
+        val db = writableDatabase
+        return db.delete(TASK_TABLE, "$TASK_ID = ?", arrayOf(taskId.toString()))
     }
 }
