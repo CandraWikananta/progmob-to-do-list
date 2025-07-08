@@ -86,10 +86,11 @@ class DatabaseHelper (private val context: Context):
         onCreate(db)
     }
 
-    fun insertUser(username: String, password: String): Long {
+    fun insertUser(username: String, password: String, email:String): Long {
         val values =ContentValues().apply {
             put(USER_NAME, username)
             put(USER_PASSWORD, password)
+            put(USER_EMAIL, email)
         }
         val db = writableDatabase
         return db.insert(USER_TABLE, null, values)

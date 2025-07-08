@@ -7,45 +7,43 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.progmob.todolist.databinding.ActivitySignInBinding
+
 
 class SignInActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivitySignInBinding
+    private lateinit var databaseHelper: DatabaseHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_sign_in)
+        binding = ActivitySignInBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val signInName: EditText = findViewById(R.id.signInName)
-        val signInPassword: EditText = findViewById(R.id.signInPassword)
-        val coninueButton: Button = findViewById(R.id.signInButton)
+        databaseHelper = DatabaseHelper(this)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.signInForm)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        binding.signInButton.setOnClickListener{
+            val loginUsername = binding.signInName.text.toString()
+            val loginPassword = binding.signInPassword.text.toString()
+            loginDatabase(loginUsername, loginPassword)
         }
+        binding.goTosignUp.setOnClickListener{
+            val intent = Intent(this, SignUpActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+    }
 
-        coninueButton.setOnClickListener {
-            val enteredName = signInName.text.toString()
-            val enteredPassword = signInPassword.text.toString()
-            
-            if (enteredName.isNotEmpty() && enteredPassword.isNotEmpty()) {
-                val sharedPref = getSharedPreferences("UserInformation", MODE_PRIVATE)
-                val savedName = sharedPref.getString("Name", "")
-                val savedPassword = sharedPref.getString("Password", "")
-                
-                
-                if (enteredName == savedName && enteredPassword == savedPassword) {
-                    val intent = Intent(this, LandingPageActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                } else  {
-                    Toast.makeText(this, "Incorrect Name  or Password", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(this, "Please Fill the Fields", Toast.LENGTH_SHORT).show()
-            }
+    private fun loginDatabase(username:String, password:String){
+        val userExists = databaseHelper.readUser(username, password)
+        if(userExists){
+            Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, LandingPageActivity::class.java)
+            startActivity(intent)
+            finish()
+        } else {
+            Toast.makeText(this, "Login Failed", Toast.LENGTH_SHORT).show()
         }
     }
 }
