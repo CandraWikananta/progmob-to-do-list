@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 
 data class TaskModel(
@@ -41,9 +42,11 @@ class TaskAdapter(
         holder.taskDateText.text = "${task.dueDate} | ${task.dueTime}"
         holder.taskPriorityText.text = task.priority
 
-        // Handle click to open detail
+        // Handle click to open bottom sheet (TaskDetailBottomSheet)
         holder.itemView.setOnClickListener {
-            onItemClick(task)
+            // Menampilkan TaskDetailBottomSheet saat item diklik
+            val dialog = TaskDetailDialog(task)
+            dialog.show((it.context as AppCompatActivity).supportFragmentManager, "TaskDetailDialog")
         }
     }
 
