@@ -197,6 +197,7 @@ class LandingPageActivity : AppCompatActivity() {
 
         })
 
+
         itemTouchHelper.attachToRecyclerView(binding.taskRecyclerView)
     }
 

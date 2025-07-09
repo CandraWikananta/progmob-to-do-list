@@ -1,13 +1,21 @@
 package com.progmob.todolist
 
+import android.app.ProgressDialog.show
 import android.content.Intent
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.progmob.todolist.databinding.ActivityCalendarViewBinding
 import java.text.SimpleDateFormat
 import java.util.*
@@ -59,8 +67,8 @@ class CalendarViewActivity : AppCompatActivity() {
 
         // Tangkap pemilihan tanggal pada CalendarView
         binding.calendar.setOnDateChangeListener { _, year, month, dayOfMonth ->
-            val selectedDate = "$dayOfMonth/${month + 1}/$year"
-            loadTasks(selectedDate)  // Memuat task berdasarkan tanggal yang dipilih
+            val selectedDate = formatDateForDb(dayOfMonth, month, year)
+            loadTasks(selectedDate)
         }
     }
 
@@ -71,18 +79,111 @@ class CalendarViewActivity : AppCompatActivity() {
         loadTasks(currentDate)
     }
 
+    private fun formatDateForDb(day: Int, month: Int, year: Int): String {
+        // Format jadi "dd-MM-yyyy"
+        return String.format("%02d-%02d-%04d", day, month + 1, year)
+    }
+
+
     // Fungsi untuk menyiapkan RecyclerView dan adapter
     private fun setupRecyclerView() {
-        adapter = TaskAdapter(mutableListOf(), { updatedTask ->
-            // Handle onCheckedChanged
-            loadTasks(getCurrentDate())
-        }, { task ->
-            // Handle item click, for example to show details
-            // Example: startActivity(Intent(this, TaskDetailActivity::class.java))
-        })
+        adapter = TaskAdapter(
+            taskList = mutableListOf(),
+            onCheckedChanged = { updatedTask ->
+                databaseHelper.updateTaskCompletion(updatedTask.id, updatedTask.completed)
+                loadTasks(getCurrentDate())
+            },
+            onItemClick = { task ->
+                val dialog = TaskDetailDialog(task, isCompleted = task.completed)
+                dialog.show(supportFragmentManager, "TaskDetailDialog")
+            }
+        )
+
         binding.taskRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.taskRecyclerView.adapter = adapter
+
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+
+                AlertDialog.Builder(this@CalendarViewActivity).apply {
+                    setTitle("Hapus Tugas")
+                    setMessage("Apakah kamu yakin ingin menghapus tugas ini?")
+                    setPositiveButton("Ya") { _, _ ->
+                        val deleted = adapter.deleteTaskAndRemoveAt(position, databaseHelper)
+                        if (deleted) {
+                            Toast.makeText(this@CalendarViewActivity, "Tugas berhasil dihapus", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this@CalendarViewActivity, "Gagal menghapus tugas", Toast.LENGTH_SHORT).show()
+                            adapter.notifyItemChanged(position)
+                        }
+                    }
+                    setNegativeButton("Batal") { _, _ ->
+                        adapter.notifyItemChanged(position)
+                    }
+                    setCancelable(false)
+                    show()
+                }
+            }
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                val itemView = viewHolder.itemView
+                val background = ContextCompat.getDrawable(this@CalendarViewActivity, R.drawable.rounded_red_background)
+
+                background?.setBounds(
+                    itemView.right + dX.toInt(),
+                    itemView.top,
+                    itemView.right,
+                    itemView.bottom
+                )
+                background?.draw(c)
+
+                val icon = ContextCompat.getDrawable(this@CalendarViewActivity, R.drawable.ic_delete)
+                val iconMargin = 32
+                val iconTop = itemView.top + (itemView.height - icon!!.intrinsicHeight) / 2
+                val iconLeft = itemView.right - iconMargin - icon.intrinsicWidth
+                val iconRight = itemView.right - iconMargin
+                val iconBottom = iconTop + icon.intrinsicHeight
+                icon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
+                icon.draw(c)
+
+                val paint = Paint().apply {
+                    color = ContextCompat.getColor(this@CalendarViewActivity, android.R.color.white)
+                    textSize = 36f
+                    isAntiAlias = true
+                    textAlign = Paint.Align.RIGHT
+                }
+
+                val text = "Swipe to Delete"
+                val textX = iconLeft - 16f
+                val textY = itemView.top + (itemView.height / 2f) + (paint.textSize / 3f)
+
+                c.drawText(text, textX, textY, paint)
+
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            }
+        })
+
+        itemTouchHelper.attachToRecyclerView(binding.taskRecyclerView)
+
+
+        itemTouchHelper.attachToRecyclerView(binding.taskRecyclerView)
     }
+
 
     // Fungsi untuk memuat data tugas dari database dan menampilkan di RecyclerView berdasarkan tanggal
     private fun loadTasks(selectedDate: String) {
@@ -136,8 +237,8 @@ class CalendarViewActivity : AppCompatActivity() {
     private fun getCurrentDate(): String {
         val calendar = Calendar.getInstance()
         val day = calendar.get(Calendar.DAY_OF_MONTH)
-        val month = calendar.get(Calendar.MONTH) + 1 // Bulan mulai dari 0, jadi tambahkan 1
+        val month = calendar.get(Calendar.MONTH)
         val year = calendar.get(Calendar.YEAR)
-        return "$day/$month/$year"
+        return formatDateForDb(day, month, year)
     }
 }

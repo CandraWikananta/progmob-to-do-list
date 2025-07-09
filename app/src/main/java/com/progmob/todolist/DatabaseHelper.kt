@@ -355,5 +355,29 @@ class DatabaseHelper (private val context: Context):
         return db.delete(USER_TABLE, "$USER_ID = ?", arrayOf(userId.toString()))
     }
 
+    fun getTasksByDate(userId: Int, selectedDate: String): Cursor {
+        val db = readableDatabase
+        return db.rawQuery(
+            "SELECT * FROM $TASK_TABLE WHERE $TASK_USER_ID = ? AND $TASK_DUE_DATE = ?",
+            arrayOf(userId.toString(), selectedDate)
+        )
+    }
+
+    fun updateTaskCompletion(taskId: Int, isCompleted: Boolean): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put("completed", if (isCompleted) 1 else 0)
+        }
+
+        val rowsAffected = db.update(
+            TASK_TABLE,
+            values,
+            "id = ?",
+            arrayOf(taskId.toString())
+        )
+
+        return rowsAffected > 0
+    }
+
 
 }
