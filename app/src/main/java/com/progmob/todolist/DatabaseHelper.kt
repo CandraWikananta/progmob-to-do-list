@@ -337,5 +337,23 @@ class DatabaseHelper (private val context: Context):
         return db.update(USER_TABLE, values, "$USER_ID = ?", arrayOf(userId.toString()))
     }
 
+    // menghapus semua task berdasarkan user id
+    fun deleteAllTasksByUserId(userId: Int): Int {
+        val db = writableDatabase
+        return db.delete(TASK_TABLE, "$TASK_USER_ID = ?", arrayOf(userId.toString()))
+    }
+
+    // menghapus semua category berdasarkan user id
+    fun deleteAllCategoriesByUserId(userId: Int): Int {
+        val db = writableDatabase
+        return db.delete(CATEGORY_TABLE, "$CATEGORY_USER_ID = ?", arrayOf(userId.toString()))
+    }
+
+    // menghapus user
+    fun deleteUser(userId: Int): Int {
+        val db = writableDatabase
+        return db.delete(USER_TABLE, "$USER_ID = ?", arrayOf(userId.toString()))
+    }
+
 
 }
