@@ -1,21 +1,20 @@
 package com.progmob.todolist
 
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.Window
+import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
-import android.content.Intent
 
 class TaskDetailDialog(private val task: TaskModel) : DialogFragment() {
 
+    private lateinit var databaseHelper: DatabaseHelper
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE) // remove title
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE) // Menghilangkan title
         return dialog
     }
 
@@ -25,6 +24,8 @@ class TaskDetailDialog(private val task: TaskModel) : DialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.layout_bottom_sheet_task_detail, container, false)
+
+        databaseHelper = DatabaseHelper(requireContext())
 
         val titleText = view.findViewById<TextView>(R.id.taskTitle)
         val descText = view.findViewById<TextView>(R.id.taskDesc)
@@ -36,9 +37,13 @@ class TaskDetailDialog(private val task: TaskModel) : DialogFragment() {
         titleText.text = task.title
         descText.text = task.description
         dueText.text = "Due: ${task.dueDate} ${task.dueTime}"
-        categoryText.text = "Category: ${task.category}"
         priorityText.text = "Priority: ${task.priority}"
 
+        // Ambil nama kategori berdasarkan ID dari database
+        val categoryName = databaseHelper.getCategoryNameByTaskId(task.id)
+        categoryText.text = "Category: $categoryName"
+
+        // Tombol Edit
         editButton.setOnClickListener {
             val intent = Intent(requireContext(), EditTaskActivity::class.java)
             intent.putExtra("TASK_ID", task.id)

@@ -193,11 +193,13 @@ class DatabaseHelper (private val context: Context):
         )
     }
 
+    // fungsi menghapus semua completed task
     fun deleteAllCompletedTasks(userId: Int): Int {
         val db = this.writableDatabase
         return db.delete(TASK_TABLE, "$TASK_USER_ID = ? AND $TASK_COMPLETED = 1", arrayOf(userId.toString()))
     }
 
+    // fungsi insert category
     fun insertCategory(name: String, userId: Int): Long {
         val db = writableDatabase
         val values = ContentValues().apply {
@@ -207,5 +209,59 @@ class DatabaseHelper (private val context: Context):
         return db.insert("category_tb", null, values)
     }
 
+    // mengambil category yang user buat
+    fun getCategoriesByUser(userId: Int): List<Pair<Int, String>> {
+        val db = readableDatabase
+        val list = mutableListOf<Pair<Int, String>>()
+        val cursor = db.rawQuery(
+            "SELECT id, name FROM category_tb WHERE user_id = ?",
+            arrayOf(userId.toString())
+        )
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+                val name = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+                list.add(Pair(id, name))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
+
+    fun getCategoryNameById(id: Int): String {
+        val db = this.readableDatabase
+        val cursor = db.query(
+            "category_tb",
+            arrayOf("name"),
+            "id = ?",
+            arrayOf(id.toString()),
+            null, null, null
+        )
+
+        var name = "Tidak diketahui"
+        if (cursor.moveToFirst()) {
+            name = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+        }
+        cursor.close()
+        return name
+    }
+
+    fun getCategoryNameByTaskId(taskId: Int): String {
+        val db = this.readableDatabase
+        val query = """
+        SELECT c.name FROM category_tb c
+        JOIN task_tb t ON t.category_id = c.id
+        WHERE t.id = ?
+    """
+        val cursor = db.rawQuery(query, arrayOf(taskId.toString()))
+        var name = "Tidak diketahui"
+
+        if (cursor.moveToFirst()) {
+            name = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+        }
+
+        cursor.close()
+        return name
+    }
 
 }

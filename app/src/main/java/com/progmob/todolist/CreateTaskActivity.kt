@@ -34,11 +34,25 @@ class CreateTaskActivity : AppCompatActivity() {
         }
 
         // Spinner data
-        val categories = arrayOf("Personal", "Kuliah", "Kerja")
         val priorities = arrayOf("Low", "Medium", "High")
 
+        // Ambil user ID
+        val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+        val userId = sharedPref.getInt("user_id", -1)
+
+        if (userId == -1) {
+            Toast.makeText(this, "User belum login!", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, SignInActivity::class.java))
+            finish()
+            return
+        }
+
+        // Ambil kategori dari database
+        val categoryList = databaseHelper.getCategoriesByUser(userId)
+        val categoryNames = categoryList.map { it.second }  // Ambil nama saja untuk spinner
+
         // Set adapter category
-        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
+        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categoryNames)
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerCategory.adapter = categoryAdapter
 
@@ -91,12 +105,14 @@ class CreateTaskActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val categoryId = when (category) {
-                "Personal" -> 1
-                "Kuliah" -> 2
-                "Kerja" -> 3
-                else -> 0
+            // Ambil kembali ID dari category yang dipilih berdasarkan urutan spinner
+            val selectedIndex = binding.spinnerCategory.selectedItemPosition
+            val categoryId = if (selectedIndex in categoryList.indices) {
+                categoryList[selectedIndex].first
+            } else {
+                0
             }
+
 
             val result = databaseHelper.insertTask(
                 userId, categoryId, title, description, priority, dueDate, dueTime

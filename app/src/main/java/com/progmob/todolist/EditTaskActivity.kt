@@ -16,8 +16,8 @@ class EditTaskActivity : AppCompatActivity() {
     private lateinit var databaseHelper: DatabaseHelper
 
     private var taskId: Int = -1
-
-    private val categories = listOf("Personal", "Kuliah", "Kerja")
+    private var userId: Int = -1
+    private var categoryList: List<Pair<Int, String>> = emptyList()  // (id, name)
     private val priorities = listOf("Low", "Medium", "High")
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,13 +28,21 @@ class EditTaskActivity : AppCompatActivity() {
         databaseHelper = DatabaseHelper(this)
         taskId = intent.getIntExtra("TASK_ID", -1)
 
-        if (taskId == -1) {
-            Toast.makeText(this, "Task ID tidak ditemukan", Toast.LENGTH_SHORT).show()
+        // Ambil userId dari SharedPreferences
+        val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+        userId = sharedPref.getInt("user_id", -1)
+
+        if (taskId == -1 || userId == -1) {
+            Toast.makeText(this, "Task ID atau User ID tidak ditemukan", Toast.LENGTH_SHORT).show()
             finish()
         }
 
+        // Ambil kategori user dari database
+        categoryList = databaseHelper.getCategoriesByUser(userId)
+        val categoryNames = categoryList.map { it.second }
+
         // Spinner: Category
-        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
+        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categoryNames)
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerCategory.adapter = categoryAdapter
 
@@ -67,22 +75,17 @@ class EditTaskActivity : AppCompatActivity() {
             val dueTime = cursor.getString(cursor.getColumnIndexOrThrow("due_time"))
             val categoryId = cursor.getInt(cursor.getColumnIndexOrThrow("category_id"))
 
-            val categoryName = when (categoryId) {
-                1 -> "Personal"
-                2 -> "Kuliah"
-                3 -> "Kerja"
-                else -> "Lainnya"
-            }
-
             binding.inputTitle.setText(title)
             binding.inputDescription.setText(description)
             binding.inputDueDate.setText(dueDate)
             binding.inputTime.setText(dueTime)
 
+            // Set selection spinner priority
             val priorityIndex = priorities.indexOf(priority)
             if (priorityIndex >= 0) binding.spinnerPriority.setSelection(priorityIndex)
 
-            val categoryIndex = categories.indexOf(categoryName)
+            // Set selection spinner category berdasarkan ID
+            val categoryIndex = categoryList.indexOfFirst { it.first == categoryId }
             if (categoryIndex >= 0) binding.spinnerCategory.setSelection(categoryIndex)
         }
         cursor.close()
@@ -121,13 +124,13 @@ class EditTaskActivity : AppCompatActivity() {
         val priority = binding.spinnerPriority.selectedItem.toString()
         val dueDate = binding.inputDueDate.text.toString()
         val dueTime = binding.inputTime.text.toString()
-        val category = binding.spinnerCategory.selectedItem.toString()
 
-        val categoryId = when (category) {
-            "Personal" -> 1
-            "Kuliah" -> 2
-            "Kerja" -> 3
-            else -> 0
+        // Ambil ID kategori dari posisi Spinner
+        val categoryIndex = binding.spinnerCategory.selectedItemPosition
+        val categoryId = if (categoryIndex in categoryList.indices) {
+            categoryList[categoryIndex].first
+        } else {
+            0
         }
 
         val result = databaseHelper.updateTask(

@@ -49,20 +49,16 @@ class DetailTaskActivity : AppCompatActivity() {
     private fun loadTaskDetails() {
         val cursor = databaseHelper.getTaskById(taskId)
 
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             val title = cursor.getString(cursor.getColumnIndexOrThrow("title"))
             val description = cursor.getString(cursor.getColumnIndexOrThrow("description"))
             val priority = cursor.getString(cursor.getColumnIndexOrThrow("priority"))
             val dueDate = cursor.getString(cursor.getColumnIndexOrThrow("due_date"))
             val dueTime = cursor.getString(cursor.getColumnIndexOrThrow("due_time"))
-
             val categoryId = cursor.getInt(cursor.getColumnIndexOrThrow("category_id"))
-            val categoryName = when (categoryId) {
-                1 -> "Personal"
-                2 -> "Kuliah"
-                3 -> "Kerja"
-                else -> "Lainnya"
-            }
+
+            // Ambil nama kategori dari DB
+            val categoryName = databaseHelper.getCategoryNameById(categoryId)
 
             // Tampilkan data ke UI
             binding.taskTitle.text = title
@@ -71,9 +67,11 @@ class DetailTaskActivity : AppCompatActivity() {
             binding.taskCategory.text = categoryName
             binding.taskDueDate.text = dueDate
             binding.taskDueTime.text = dueTime
+        } else {
+            Toast.makeText(this, "Data task tidak ditemukan", Toast.LENGTH_SHORT).show()
         }
 
-        cursor.close()
+        cursor?.close()
     }
 
     private fun showDeleteConfirmation() {

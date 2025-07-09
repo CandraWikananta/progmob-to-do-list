@@ -3,6 +3,7 @@ package com.progmob.todolist
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Canvas
+import android.graphics.Paint
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -14,14 +15,12 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.progmob.todolist.databinding.ActivityLandingPageBinding
-import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
-import android.graphics.Paint
 
 class LandingPageActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLandingPageBinding
     private lateinit var databaseHelper: DatabaseHelper
-    private lateinit var adapter: TaskAdapter  // properti adapter agar bisa diakses di mana-mana
+    private lateinit var adapter: TaskAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,18 +33,15 @@ class LandingPageActivity : AppCompatActivity() {
         setupRecyclerView()
         loadTasks()
 
-        // tombol add task
         binding.addTask.setOnClickListener {
             startActivity(Intent(this, CreateTaskActivity::class.java))
             finish()
         }
 
-        // tombol view completed task
         binding.viewCompletedText.setOnClickListener {
             startActivity(Intent(this, CompletedTaskActivity::class.java))
         }
 
-        // tombol create category
         binding.btnCreateCategory.setOnClickListener {
             val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
             val userId = sharedPref.getInt("user_id", -1)
@@ -68,18 +64,15 @@ class LandingPageActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = TaskAdapter(mutableListOf()) { updatedTask ->
-            // Callback setelah centang atau hapus
+        adapter = TaskAdapter(mutableListOf()) {
             android.os.Handler().postDelayed({
                 loadTasks()
             }, 600)
         }
 
-
         binding.taskRecyclerView.adapter = adapter
         binding.taskRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Swipe gesture
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -103,14 +96,13 @@ class LandingPageActivity : AppCompatActivity() {
                         }
                     }
                     setNegativeButton("Batal") { _, _ ->
-                        adapter.notifyItemChanged(position)  // Batalkan swipe
+                        adapter.notifyItemChanged(position)
                     }
                     setCancelable(false)
                     show()
                 }
             }
 
-            // Tampilan Merah saat swipe task
             override fun onChildDraw(
                 c: Canvas,
                 recyclerView: RecyclerView,
@@ -123,7 +115,6 @@ class LandingPageActivity : AppCompatActivity() {
                 val itemView = viewHolder.itemView
                 val background = ContextCompat.getDrawable(this@LandingPageActivity, R.drawable.rounded_red_background)
 
-                // Gambar rounded background merah
                 background?.setBounds(
                     itemView.right + dX.toInt(),
                     itemView.top,
@@ -132,8 +123,7 @@ class LandingPageActivity : AppCompatActivity() {
                 )
                 background?.draw(c)
 
-                // Gambar ikon delete
-                val icon = ContextCompat.getDrawable(this@LandingPageActivity, R.drawable.ic_delete)  // Pastikan ic_delete ada
+                val icon = ContextCompat.getDrawable(this@LandingPageActivity, R.drawable.ic_delete)
                 val iconMargin = 32
                 val iconTop = itemView.top + (itemView.height - icon!!.intrinsicHeight) / 2
                 val iconLeft = itemView.right - iconMargin - icon.intrinsicWidth
@@ -142,7 +132,6 @@ class LandingPageActivity : AppCompatActivity() {
                 icon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
                 icon.draw(c)
 
-                // Gambar teks "Delete Task"
                 val paint = Paint()
                 paint.color = ContextCompat.getColor(this@LandingPageActivity, android.R.color.white)
                 paint.textSize = 36f
@@ -158,8 +147,8 @@ class LandingPageActivity : AppCompatActivity() {
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             }
 
-
         })
+
         itemTouchHelper.attachToRecyclerView(binding.taskRecyclerView)
     }
 
@@ -181,25 +170,19 @@ class LandingPageActivity : AppCompatActivity() {
                 val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
                 val title = cursor.getString(cursor.getColumnIndexOrThrow("title"))
                 val description = cursor.getString(cursor.getColumnIndexOrThrow("description"))
-                val category = cursor.getInt(cursor.getColumnIndexOrThrow("category_id"))
+                val categoryId = cursor.getInt(cursor.getColumnIndexOrThrow("category_id"))
                 val priority = cursor.getString(cursor.getColumnIndexOrThrow("priority"))
                 val dueDate = cursor.getString(cursor.getColumnIndexOrThrow("due_date"))
                 val dueTime = cursor.getString(cursor.getColumnIndexOrThrow("due_time"))
                 val completed = cursor.getInt(cursor.getColumnIndexOrThrow("completed")) == 1
 
-                val categoryName = when (category) {
-                    1 -> "Personal"
-                    2 -> "Kuliah"
-                    3 -> "Kerja"
-                    else -> "Lainnya"
-                }
+                val categoryName = databaseHelper.getCategoryNameById(categoryId)
 
                 taskList.add(TaskModel(id, title, description, categoryName, priority, dueDate, dueTime, completed))
             } while (cursor.moveToNext())
         }
         cursor.close()
 
-        // Show/hide empty state
         if (taskList.isNotEmpty()) {
             binding.taskRecyclerView.visibility = android.view.View.VISIBLE
             binding.emptyIllustration.visibility = android.view.View.GONE
@@ -210,7 +193,6 @@ class LandingPageActivity : AppCompatActivity() {
             binding.emptyText.visibility = android.view.View.VISIBLE
         }
 
-        // Update data in adapter
         adapter.taskList.clear()
         adapter.taskList.addAll(taskList)
         adapter.notifyDataSetChanged()
