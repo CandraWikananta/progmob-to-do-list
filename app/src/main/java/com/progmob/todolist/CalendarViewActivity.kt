@@ -66,9 +66,9 @@ class CalendarViewActivity : AppCompatActivity() {
         }
 
         // Tangkap pemilihan tanggal pada CalendarView
-        binding.calendar.setOnDateChangeListener { _, year, month, dayOfMonth ->
-            val selectedDate = formatDateForDb(dayOfMonth, month, year)
-            loadTasks(selectedDate)
+        binding.calendar.setOnDateChangeListener { view, year, month, dayOfMonth ->
+            val formattedDate = String.format("%02d-%02d-%04d", dayOfMonth, month + 1, year)
+            loadTasks(formattedDate)
         }
     }
 
