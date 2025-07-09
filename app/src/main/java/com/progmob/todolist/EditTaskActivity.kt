@@ -97,26 +97,42 @@ class EditTaskActivity : AppCompatActivity() {
         val month = calendar.get(Calendar.MONTH)
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-        val datePicker = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
-            val dateString = String.format("%02d-%02d-%04d", selectedDay, selectedMonth + 1, selectedYear)
-            binding.inputDueDate.setText(dateString)
-        }, year, month, day)
+        val datePicker = DatePickerDialog(
+            this,
+            R.style.RedDatePickerDialogTheme,
+            { _, selectedYear, selectedMonth, selectedDay ->
+                val dateString = String.format("%02d-%02d-%04d", selectedDay, selectedMonth + 1, selectedYear)
+                binding.inputDueDate.setText(dateString)
+            },
+            year,
+            month,
+            day
+        )
 
         datePicker.show()
     }
+
 
     private fun showTimePicker() {
         val calendar = Calendar.getInstance()
         val hour = calendar.get(Calendar.HOUR_OF_DAY)
         val minute = calendar.get(Calendar.MINUTE)
 
-        val timePicker = TimePickerDialog(this, { _, selectedHour, selectedMinute ->
-            val timeString = String.format("%02d:%02d", selectedHour, selectedMinute)
-            binding.inputTime.setText(timeString)
-        }, hour, minute, true)
+        val timePicker = TimePickerDialog(
+            this,
+            R.style.RedDatePickerDialogTheme,
+            { _, selectedHour, selectedMinute ->
+                val timeString = String.format("%02d:%02d", selectedHour, selectedMinute)
+                binding.inputTime.setText(timeString)
+            },
+            hour,
+            minute,
+            true
+        )
 
         timePicker.show()
     }
+
 
     private fun updateTask() {
         val title = binding.inputTitle.text.toString()

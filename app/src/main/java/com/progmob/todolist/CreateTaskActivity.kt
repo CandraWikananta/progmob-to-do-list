@@ -61,17 +61,25 @@ class CreateTaskActivity : AppCompatActivity() {
         priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerPriority.adapter = priorityAdapter
 
-        // Date Picker
         val calendar = Calendar.getInstance()
+        // Date Picker
         binding.inputDueDate.setOnClickListener {
             val year = calendar.get(Calendar.YEAR)
             val month = calendar.get(Calendar.MONTH)
             val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-            DatePickerDialog(this, { _, y, m, d ->
-                val formatted = String.format("%02d-%02d-%04d", d, m + 1, y)
-                binding.inputDueDate.setText(formatted)
-            }, year, month, day).show()
+            val datePickerDialog = DatePickerDialog(
+                this,
+                R.style.RedDatePickerDialogTheme, // ← gunakan custom style merah
+                { _, y, m, d ->
+                    val formatted = String.format("%02d-%02d-%04d", d, m + 1, y)
+                    binding.inputDueDate.setText(formatted)
+                },
+                year,
+                month,
+                day
+            )
+            datePickerDialog.show()
         }
 
         // Time Picker
@@ -79,11 +87,20 @@ class CreateTaskActivity : AppCompatActivity() {
             val hour = calendar.get(Calendar.HOUR_OF_DAY)
             val minute = calendar.get(Calendar.MINUTE)
 
-            TimePickerDialog(this, { _, h, m ->
-                val formatted = String.format("%02d:%02d", h, m)
-                binding.inputTime.setText(formatted)
-            }, hour, minute, true).show()
+            val timePickerDialog = TimePickerDialog(
+                this,
+                R.style.RedDatePickerDialogTheme, // ← gunakan custom style merah juga
+                { _, h, m ->
+                    val formatted = String.format("%02d:%02d", h, m)
+                    binding.inputTime.setText(formatted)
+                },
+                hour,
+                minute,
+                true
+            )
+            timePickerDialog.show()
         }
+
 
         // Tombol Add Task
         binding.btnAddTask.setOnClickListener {
