@@ -192,48 +192,6 @@ class DatabaseHelper (private val context: Context):
         )
     }
 
-    // ambil semua task yang sudah di centang
-    fun getAllTasksWithCompletion(userId: Int): List<TaskModel> {
-        val taskList = mutableListOf<TaskModel>()
-        val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TASK_TABLE WHERE $TASK_USER_ID = ?", arrayOf(userId.toString()))
-
-        if (cursor.moveToFirst()) {
-            do {
-                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
-                val title = cursor.getString(cursor.getColumnIndexOrThrow("title"))
-                val description = cursor.getString(cursor.getColumnIndexOrThrow("description"))
-                val categoryId = cursor.getInt(cursor.getColumnIndexOrThrow("category_id"))
-                val priority = cursor.getString(cursor.getColumnIndexOrThrow("priority"))
-                val dueDate = cursor.getString(cursor.getColumnIndexOrThrow("due_date"))
-                val dueTime = cursor.getString(cursor.getColumnIndexOrThrow("due_time"))
-                val completed = cursor.getInt(cursor.getColumnIndexOrThrow("completed")) == 1
-
-                val categoryName = when (categoryId) {
-                    1 -> "Personal"
-                    2 -> "Kuliah"
-                    3 -> "Kerja"
-                    else -> "Lainnya"
-                }
-
-                taskList.add(
-                    TaskModel(id, title, description, categoryName, priority, dueDate, dueTime, completed)
-                )
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        return taskList
-    }
-
-    fun getTasksByCompletion(userId: Int, completed: Boolean): Cursor {
-        val db = this.readableDatabase
-        val status = if (completed) 1 else 0
-        return db.rawQuery(
-            "SELECT * FROM $TASK_TABLE WHERE user_id = ? AND completed = ?",
-            arrayOf(userId.toString(), status.toString())
-        )
-    }
-
     fun deleteAllCompletedTasks(userId: Int): Int {
         val db = this.writableDatabase
         return db.delete(TASK_TABLE, "$TASK_USER_ID = ? AND $TASK_COMPLETED = 1", arrayOf(userId.toString()))
