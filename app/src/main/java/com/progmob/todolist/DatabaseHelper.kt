@@ -234,5 +234,9 @@ class DatabaseHelper (private val context: Context):
         )
     }
 
+    fun deleteAllCompletedTasks(userId: Int): Int {
+        val db = this.writableDatabase
+        return db.delete(TASK_TABLE, "$TASK_USER_ID = ? AND $TASK_COMPLETED = 1", arrayOf(userId.toString()))
+    }
 
 }

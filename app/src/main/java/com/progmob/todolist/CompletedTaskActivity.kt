@@ -4,7 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -37,6 +39,25 @@ class CompletedTaskActivity : AppCompatActivity() {
         }
 
         loadCompletedTasks()
+        binding.deleteAllText.setOnClickListener {
+            AlertDialog.Builder(this).apply {
+                setTitle("Hapus Semua Tugas Selesai")
+                setMessage("Apakah Anda yakin ingin menghapus semua tugas yang telah selesai?")
+                setPositiveButton("Ya") { _, _ ->
+                    val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+                    val userId = sharedPref.getInt("user_id", -1)
+
+                    if (userId != -1) {
+                        val rowsDeleted = databaseHelper.deleteAllCompletedTasks(userId)
+                        Toast.makeText(this@CompletedTaskActivity, "$rowsDeleted tugas berhasil dihapus", Toast.LENGTH_SHORT).show()
+                        loadCompletedTasks()
+                    }
+                }
+                setNegativeButton("Batal", null)
+                show()
+            }
+        }
+
     }
 
     private fun loadCompletedTasks() {
