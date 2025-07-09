@@ -66,5 +66,16 @@ class ProfileActivity : AppCompatActivity() {
                 .show()
         }
 
+        // mengambil nama user dan menampilkan nya di profile page
+        val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+        val userId = sharedPref.getInt("user_id", -1)
+
+        if (userId != -1) {
+            val db = DatabaseHelper(this)
+            val username = db.getUsernameById(userId)
+            binding.tvName.text = username
+        }
+
+
     }
 }

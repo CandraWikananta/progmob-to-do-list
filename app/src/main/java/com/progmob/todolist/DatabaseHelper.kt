@@ -277,5 +277,17 @@ class DatabaseHelper (private val context: Context):
         return hasCategory
     }
 
+    // mengambil username berdasarkan ID
+    fun getUsernameById(userId: Int): String {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT name FROM $USER_TABLE WHERE $USER_ID = ?", arrayOf(userId.toString()))
+
+        var username = "User"
+        if (cursor.moveToFirst()) {
+            username = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+        }
+        cursor.close()
+        return username
+    }
 
 }
