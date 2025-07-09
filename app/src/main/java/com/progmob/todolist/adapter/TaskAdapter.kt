@@ -89,10 +89,12 @@ class TaskAdapter(
             val db = DatabaseHelper(holder.itemView.context)
             db.updateTaskCompleted(task.id, isChecked)
 
-            // Update model di list supaya tampilan langsung berubah
-            taskList[position] = task.copy(completed = isChecked)
+            // Hapus item dari list karena akan pindah halaman
+            taskList.removeAt(position)
+            notifyItemRemoved(position)
 
-            notifyItemChanged(position)
+            // Beritahu activity untuk handle perpindahan
+            onItemClick(task.copy(completed = isChecked))
         }
 
 

@@ -14,19 +14,51 @@ class LandingPageActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLandingPageBinding
     private lateinit var databaseHelper: DatabaseHelper
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        binding = ActivityLandingPageBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        databaseHelper = DatabaseHelper(this)
+
+        loadTasks()
+
+        binding.addTask.setOnClickListener {
+            val intent = Intent(this, CreateTaskActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+
+        binding.viewCompletedText.setOnClickListener {
+            val intent = Intent(this, CompletedTaskActivity::class.java)
+            startActivity(intent)
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadTasks()
+    }
+
     private fun loadTasks() {
         val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
         val userId = sharedPref.getInt("user_id", -1)
 
         if (userId == -1) {
-            // User belum login, arahkan ke login
             val intent = Intent(this, SignInActivity::class.java)
             startActivity(intent)
             finish()
             return
         }
 
-        val cursor = databaseHelper.getAllTasks(userId)
+        val cursor = databaseHelper.getIncompleteTasks(userId)
         val taskList = mutableListOf<TaskModel>()
 
         if (cursor.moveToFirst()) {
@@ -62,45 +94,14 @@ class LandingPageActivity : AppCompatActivity() {
             binding.emptyText.visibility = android.view.View.VISIBLE
         }
 
-        val adapter = TaskAdapter(taskList.toMutableList()) { task ->
-            val intent = Intent(this, DetailTaskActivity::class.java)
-            intent.putExtra("TASK_ID", task.id)
-            startActivity(intent)
+        val adapter = TaskAdapter(taskList.toMutableList()) { updatedTask ->
+            // Jika task dicentang (selesai), maka reload untuk menghapus dari list
+            if (updatedTask.completed) {
+                loadTasks()
+            }
         }
 
         binding.taskRecyclerView.adapter = adapter
         binding.taskRecyclerView.layoutManager = LinearLayoutManager(this)
     }
-
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        binding = ActivityLandingPageBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        databaseHelper = DatabaseHelper(this)
-
-        loadTasks()
-
-        binding.addTask.setOnClickListener{
-            val intent = Intent(this, CreateTaskActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadTasks()
-    }
-
 }

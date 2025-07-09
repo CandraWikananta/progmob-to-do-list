@@ -225,5 +225,14 @@ class DatabaseHelper (private val context: Context):
         return taskList
     }
 
+    fun getTasksByCompletion(userId: Int, completed: Boolean): Cursor {
+        val db = this.readableDatabase
+        val status = if (completed) 1 else 0
+        return db.rawQuery(
+            "SELECT * FROM $TASK_TABLE WHERE user_id = ? AND completed = ?",
+            arrayOf(userId.toString(), status.toString())
+        )
+    }
+
 
 }
