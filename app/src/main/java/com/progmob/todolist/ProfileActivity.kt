@@ -47,5 +47,24 @@ class ProfileActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
+        // Logout logic
+        binding.ivLogout.setOnClickListener {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Konfirmasi Logout")
+                .setMessage("Apakah Anda yakin ingin logout?")
+                .setPositiveButton("Ya") { _, _ ->
+                    val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+                    sharedPref.edit().clear().apply()
+
+                    val intent = Intent(this, CreateAccountActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
+                .setNegativeButton("Batal", null)
+                .show()
+        }
+
     }
 }
