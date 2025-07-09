@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.progmob.todolist.databinding.ActivityLandingPageBinding
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
+import android.graphics.Paint
 
 class LandingPageActivity : AppCompatActivity() {
 
@@ -97,24 +98,55 @@ class LandingPageActivity : AppCompatActivity() {
                 }
             }
 
+            // Tampilan Merah saat swipe task
             override fun onChildDraw(
-                c: Canvas, recyclerView: RecyclerView,
+                c: Canvas,
+                recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
-                dX: Float, dY: Float,
-                actionState: Int, isCurrentlyActive: Boolean
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
             ) {
-                RecyclerViewSwipeDecorator.Builder(
-                    c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive
+                val itemView = viewHolder.itemView
+                val background = ContextCompat.getDrawable(this@LandingPageActivity, R.drawable.rounded_red_background)
+
+                // Gambar rounded background merah
+                background?.setBounds(
+                    itemView.right + dX.toInt(),
+                    itemView.top,
+                    itemView.right,
+                    itemView.bottom
                 )
-                    .addBackgroundColor(ContextCompat.getColor(this@LandingPageActivity, android.R.color.holo_red_dark))
-                    .addActionIcon(R.drawable.ic_delete)
-                    .addSwipeLeftLabel("Swipe to Delete")
-                    .setSwipeLeftLabelColor(ContextCompat.getColor(this@LandingPageActivity, android.R.color.white))
-                    .create()
-                    .decorate()
+                background?.draw(c)
+
+                // Gambar ikon delete
+                val icon = ContextCompat.getDrawable(this@LandingPageActivity, R.drawable.ic_delete)  // Pastikan ic_delete ada
+                val iconMargin = 32
+                val iconTop = itemView.top + (itemView.height - icon!!.intrinsicHeight) / 2
+                val iconLeft = itemView.right - iconMargin - icon.intrinsicWidth
+                val iconRight = itemView.right - iconMargin
+                val iconBottom = iconTop + icon.intrinsicHeight
+                icon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
+                icon.draw(c)
+
+                // Gambar teks "Delete Task"
+                val paint = Paint()
+                paint.color = ContextCompat.getColor(this@LandingPageActivity, android.R.color.white)
+                paint.textSize = 36f
+                paint.isAntiAlias = true
+                paint.textAlign = Paint.Align.RIGHT
+
+                val text = "Swipe to Delete"
+                val textX = iconLeft - 16f
+                val textY = itemView.top + (itemView.height / 2f) + (paint.textSize / 3f)
+
+                c.drawText(text, textX, textY, paint)
 
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             }
+
+
         })
         itemTouchHelper.attachToRecyclerView(binding.taskRecyclerView)
     }
