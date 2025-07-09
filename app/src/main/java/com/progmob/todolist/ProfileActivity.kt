@@ -2,11 +2,7 @@ package com.progmob.todolist
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -15,7 +11,6 @@ import com.progmob.todolist.databinding.ActivityProfileBinding
 class ProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProfileBinding
-    private lateinit var editProfileLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,10 +35,11 @@ class ProfileActivity : AppCompatActivity() {
                     finish()
                     true
                 }
-                R.id.nav_calendar -> {
-                    Toast.makeText(this, "Calendar belum tersedia", Toast.LENGTH_SHORT).show()
-                    true
-                }
+//              R.id.nav_calendar -> {
+//                  startActivity(Intent(this, CalendarActivity::class.java))
+//                  finish()
+//                  true
+//              }
                 R.id.nav_profile -> {
                     // Sudah di halaman Profile, tidak perlu pindah
                     true
@@ -70,21 +66,6 @@ class ProfileActivity : AppCompatActivity() {
                 .show()
         }
 
-        editProfileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                val updatedName = result.data?.getStringExtra("UPDATED_NAME")
-                if (!updatedName.isNullOrEmpty()) {
-                    findViewById<TextView>(R.id.tvName).text = updatedName
-                }
-            }
-        }
-
-        // pergi ke halaman edit profile
-        binding.btnEditProfile.setOnClickListener {
-            val intent = Intent(this, EditProfilActivity::class.java)
-            editProfileLauncher.launch(intent)
-        }
-
         // mengambil nama user dan menampilkan nya di profile page
         val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
         val userId = sharedPref.getInt("user_id", -1)
@@ -104,37 +85,6 @@ class ProfileActivity : AppCompatActivity() {
             binding.tvTaskLeft.text = remainingCount.toString()
         }
 
-        // Delete account logic
-        binding.btnDeleteAccount.setOnClickListener {
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Hapus Akun")
-                .setMessage("Akun Anda akan dihapus secara permanen. Lanjutkan?")
-                .setPositiveButton("Hapus") { _, _ ->
-                    val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
-                    val userId = sharedPref.getInt("user_id", -1)
-
-                    if (userId != -1) {
-                        val db = DatabaseHelper(this)
-                        db.deleteAllTasksByUserId(userId)
-                        db.deleteAllCategoriesByUserId(userId)
-                        db.deleteUser(userId)
-
-                        sharedPref.edit().clear().apply()
-
-                        Toast.makeText(this, "Akun berhasil dihapus", Toast.LENGTH_SHORT).show()
-
-                        // Redirect ke halaman CreateAccountActivity
-                        val intent = Intent(this, CreateAccountActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        Toast.makeText(this, "Gagal menghapus akun", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                .setNegativeButton("Batal", null)
-                .show()
-        }
 
     }
 }

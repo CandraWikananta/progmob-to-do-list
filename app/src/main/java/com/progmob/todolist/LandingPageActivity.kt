@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.os.Bundle
 import android.view.View
+import android.widget.CalendarView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -87,7 +88,8 @@ class LandingPageActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_calendar -> {
-                    Toast.makeText(this, "Calendar belum tersedia", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, CalendarViewActivity::class.java)
+                    startActivity(intent)
                     true
                 }
                 else -> false
@@ -203,7 +205,7 @@ class LandingPageActivity : AppCompatActivity() {
         val userId = sharedPref.getInt("user_id", -1)
 
         if (userId == -1) {
-            startActivity(Intent(this, SignInActivity::class.java))
+            startActivity(Intent(this, LandingPageActivity::class.java))
             finish()
             return
         }
