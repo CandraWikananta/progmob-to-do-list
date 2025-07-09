@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +26,7 @@ class LandingPageActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         binding = ActivityLandingPageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -34,8 +36,23 @@ class LandingPageActivity : AppCompatActivity() {
         loadTasks()
 
         binding.addTask.setOnClickListener {
-            startActivity(Intent(this, CreateTaskActivity::class.java))
-            finish()
+            val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+            val userId = sharedPref.getInt("user_id", -1)
+
+            if (!databaseHelper.hasUserCategories(userId)) {
+                AlertDialog.Builder(this)
+                    .setTitle("Kategori Tidak Ditemukan")
+                    .setMessage("Silakan buat kategori terlebih dahulu sebelum menambahkan task.")
+                    .setPositiveButton("Buat Kategori") { _, _ ->
+                        val intent = Intent(this, NewCategoryActivity::class.java)
+                        intent.putExtra("user_id", userId)
+                        startActivity(intent)
+                    }
+                    .setNegativeButton("Batal", null)
+                    .show()
+            } else {
+                startActivity(Intent(this, CreateTaskActivity::class.java))
+            }
         }
 
         binding.viewCompletedText.setOnClickListener {
@@ -51,11 +68,34 @@ class LandingPageActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        // BOTTOM NAVIGATION
+        binding.bottomNav.setOnItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_tasks -> {
+                    // Sudah di halaman tasks
+                    true
+                }
+                R.id.nav_profile -> {
+                    val intent = Intent(this, ProfileActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+                R.id.nav_calendar -> {
+                    Toast.makeText(this, "Calendar belum tersedia", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        // Opsional: set item aktif di bottom nav (highlight menu saat ini)
+        binding.bottomNav.selectedItemId = R.id.nav_tasks
     }
 
     override fun onResume() {
@@ -184,13 +224,13 @@ class LandingPageActivity : AppCompatActivity() {
         cursor.close()
 
         if (taskList.isNotEmpty()) {
-            binding.taskRecyclerView.visibility = android.view.View.VISIBLE
-            binding.emptyIllustration.visibility = android.view.View.GONE
-            binding.emptyText.visibility = android.view.View.GONE
+            binding.taskRecyclerView.visibility = View.VISIBLE
+            binding.emptyIllustration.visibility = View.GONE
+            binding.emptyText.visibility = View.GONE
         } else {
-            binding.taskRecyclerView.visibility = android.view.View.GONE
-            binding.emptyIllustration.visibility = android.view.View.VISIBLE
-            binding.emptyText.visibility = android.view.View.VISIBLE
+            binding.taskRecyclerView.visibility = View.GONE
+            binding.emptyIllustration.visibility = View.VISIBLE
+            binding.emptyText.visibility = View.VISIBLE
         }
 
         adapter.taskList.clear()

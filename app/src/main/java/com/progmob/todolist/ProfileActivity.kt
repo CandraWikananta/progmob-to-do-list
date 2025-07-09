@@ -1,20 +1,51 @@
 package com.progmob.todolist
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.progmob.todolist.databinding.ActivityProfileBinding
 
 class ProfileActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityProfileBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_profile)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        binding = ActivityProfileBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        // Set selected item ke Profile agar terlihat aktif
+        binding.bottomNav.selectedItemId = R.id.nav_profile
+
+        // Navigation logic
+        binding.bottomNav.setOnItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_tasks -> {
+                    startActivity(Intent(this, LandingPageActivity::class.java))
+                    finish()
+                    true
+                }
+//              R.id.nav_calendar -> {
+//                  startActivity(Intent(this, CalendarActivity::class.java))
+//                  finish()
+//                  true
+//              }
+                R.id.nav_profile -> {
+                    // Sudah di halaman Profile, tidak perlu pindah
+                    true
+                }
+                else -> false
+            }
         }
     }
 }

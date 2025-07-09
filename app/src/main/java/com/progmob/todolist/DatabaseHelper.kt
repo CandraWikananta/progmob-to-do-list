@@ -246,6 +246,7 @@ class DatabaseHelper (private val context: Context):
         return name
     }
 
+    // mengambil nama category berdasarkan id
     fun getCategoryNameByTaskId(taskId: Int): String {
         val db = this.readableDatabase
         val query = """
@@ -263,5 +264,18 @@ class DatabaseHelper (private val context: Context):
         cursor.close()
         return name
     }
+
+    // mengecek apakah user sudah membuat category
+    fun hasUserCategories(userId: Int): Boolean {
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT COUNT(*) FROM category_tb WHERE user_id = ?", arrayOf(userId.toString()))
+        var hasCategory = false
+        if (cursor.moveToFirst()) {
+            hasCategory = cursor.getInt(0) > 0
+        }
+        cursor.close()
+        return hasCategory
+    }
+
 
 }
