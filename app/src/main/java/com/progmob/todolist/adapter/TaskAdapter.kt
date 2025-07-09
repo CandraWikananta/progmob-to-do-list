@@ -1,6 +1,8 @@
 package com.progmob.todolist
 
 import android.graphics.Paint
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +25,6 @@ data class TaskModel(
     val completed: Boolean
 )
 
-// Fungsi untuk memformat tanggal
 private fun formatDate(inputDate: String): String {
     return try {
         val inputFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
@@ -31,7 +32,7 @@ private fun formatDate(inputDate: String): String {
         val date = inputFormat.parse(inputDate)
         outputFormat.format(date!!)
     } catch (e: Exception) {
-        inputDate // fallback
+        inputDate
     }
 }
 
@@ -63,13 +64,13 @@ class TaskAdapter(
         holder.taskDateText.text = "${formatDate(task.dueDate)} | ${task.dueTime}"
         holder.taskPriorityText.text = task.priority
 
-        // Hindari pemanggilan listener lama (recycle issue)
+        // Hindari listener ter-trigger otomatis karena reuse
         holder.taskCheckbox.setOnCheckedChangeListener(null)
 
-        // Set status checkbox
+        // Set status
         holder.taskCheckbox.isChecked = task.completed
 
-        // Fungsi bantu untuk strike-through
+        // Fungsi strike-through
         fun updateStrikeThrough(view: TextView, isCompleted: Boolean) {
             view.paintFlags = if (isCompleted) {
                 view.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
@@ -78,27 +79,37 @@ class TaskAdapter(
             }
         }
 
-        // Update tampilan strike-through berdasarkan status completed
         updateStrikeThrough(holder.taskTitleText, task.completed)
         updateStrikeThrough(holder.taskCategoryText, task.completed)
         updateStrikeThrough(holder.taskDateText, task.completed)
         updateStrikeThrough(holder.taskPriorityText, task.completed)
 
-        // Listener baru untuk checkbox
+        // Listener untuk checkbox
         holder.taskCheckbox.setOnCheckedChangeListener { _, isChecked ->
             val db = DatabaseHelper(holder.itemView.context)
             db.updateTaskCompleted(task.id, isChecked)
 
-            // Hapus item dari list karena akan pindah halaman
-            taskList.removeAt(position)
-            notifyItemRemoved(position)
+            // Update local model
+            val updatedTask = task.copy(completed = isChecked)
 
-            // Beritahu activity untuk handle perpindahan
-            onItemClick(task.copy(completed = isChecked))
+            if (isChecked) {
+                // Delay agar animasi centang terlihat sebelum dihapus
+                Handler(Looper.getMainLooper()).postDelayed({
+                    val currentPosition = holder.adapterPosition
+                    if (currentPosition != RecyclerView.NO_POSITION) {
+                        taskList.removeAt(currentPosition)
+                        notifyItemRemoved(currentPosition)
+                        onItemClick(updatedTask)
+                    }
+                }, 600) // delay animasi centang (0.6 detik)
+            } else {
+                // Jika di-uncheck, update langsung
+                taskList[position] = updatedTask
+                notifyItemChanged(position)
+                onItemClick(updatedTask)
+            }
         }
 
-
-        // Klik item → buka detail modal
         holder.itemView.setOnClickListener {
             val dialog = TaskDetailDialog(task)
             dialog.show((it.context as AppCompatActivity).supportFragmentManager, "TaskDetailDialog")

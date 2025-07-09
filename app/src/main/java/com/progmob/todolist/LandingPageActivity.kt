@@ -95,9 +95,11 @@ class LandingPageActivity : AppCompatActivity() {
         }
 
         val adapter = TaskAdapter(taskList.toMutableList()) { updatedTask ->
-            // Jika task dicentang (selesai), maka reload untuk menghapus dari list
             if (updatedTask.completed) {
-                loadTasks()
+                // Delay agar animasi centang selesai dulu sebelum task dihapus dari tampilan
+                android.os.Handler().postDelayed({
+                    loadTasks()
+                }, 600) // delay 300ms, bisa kamu ubah sesuai durasi animasi
             }
         }
 
