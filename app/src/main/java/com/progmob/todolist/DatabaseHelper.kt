@@ -320,5 +320,22 @@ class DatabaseHelper (private val context: Context):
         return count
     }
 
+    // mengambil data user berdasarkan ID
+    fun getUserById(userId: Int): Cursor {
+        val db = this.readableDatabase
+        return db.rawQuery("SELECT * FROM $USER_TABLE WHERE $USER_ID = ?", arrayOf(userId.toString()))
+    }
+
+    // fungsi update User
+    fun updateUser(userId: Int, name: String, email: String, password: String): Int {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put("name", name)
+            put("email", email)
+            put("password", password)
+        }
+        return db.update(USER_TABLE, values, "$USER_ID = ?", arrayOf(userId.toString()))
+    }
+
 
 }

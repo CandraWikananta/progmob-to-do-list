@@ -2,7 +2,10 @@ package com.progmob.todolist
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -11,6 +14,7 @@ import com.progmob.todolist.databinding.ActivityProfileBinding
 class ProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProfileBinding
+    private lateinit var editProfileLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +68,21 @@ class ProfileActivity : AppCompatActivity() {
                 }
                 .setNegativeButton("Batal", null)
                 .show()
+        }
+
+        editProfileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val updatedName = result.data?.getStringExtra("UPDATED_NAME")
+                if (!updatedName.isNullOrEmpty()) {
+                    findViewById<TextView>(R.id.tvName).text = updatedName
+                }
+            }
+        }
+
+        // pergi ke halaman edit profile
+        binding.btnEditProfile.setOnClickListener {
+            val intent = Intent(this, EditProfilActivity::class.java)
+            editProfileLauncher.launch(intent)
         }
 
         // mengambil nama user dan menampilkan nya di profile page
