@@ -1,18 +1,26 @@
 package com.progmob.todolist
 
+import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Canvas
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.progmob.todolist.databinding.ActivityLandingPageBinding
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 class LandingPageActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLandingPageBinding
     private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var adapter: TaskAdapter  // properti adapter agar bisa diakses di mana-mana
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,17 +30,16 @@ class LandingPageActivity : AppCompatActivity() {
 
         databaseHelper = DatabaseHelper(this)
 
+        setupRecyclerView()
         loadTasks()
 
         binding.addTask.setOnClickListener {
-            val intent = Intent(this, CreateTaskActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, CreateTaskActivity::class.java))
             finish()
         }
 
         binding.viewCompletedText.setOnClickListener {
-            val intent = Intent(this, CompletedTaskActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, CompletedTaskActivity::class.java))
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -47,13 +54,77 @@ class LandingPageActivity : AppCompatActivity() {
         loadTasks()
     }
 
+    private fun setupRecyclerView() {
+        adapter = TaskAdapter(mutableListOf()) { updatedTask ->
+            // Callback setelah centang atau hapus
+            android.os.Handler().postDelayed({
+                loadTasks()
+            }, 600)
+        }
+
+
+        binding.taskRecyclerView.adapter = adapter
+        binding.taskRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        // Swipe gesture
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+
+                AlertDialog.Builder(this@LandingPageActivity).apply {
+                    setTitle("Hapus Tugas")
+                    setMessage("Apakah kamu yakin ingin menghapus tugas ini?")
+                    setPositiveButton("Ya") { _, _ ->
+                        val deleted = adapter.deleteTaskAndRemoveAt(position, databaseHelper)
+                        if (deleted) {
+                            Toast.makeText(this@LandingPageActivity, "Tugas berhasil dihapus", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this@LandingPageActivity, "Gagal menghapus tugas", Toast.LENGTH_SHORT).show()
+                            adapter.notifyItemChanged(position)
+                        }
+                    }
+                    setNegativeButton("Batal") { _, _ ->
+                        adapter.notifyItemChanged(position)  // Batalkan swipe
+                    }
+                    setCancelable(false)
+                    show()
+                }
+            }
+
+            override fun onChildDraw(
+                c: Canvas, recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float, dY: Float,
+                actionState: Int, isCurrentlyActive: Boolean
+            ) {
+                RecyclerViewSwipeDecorator.Builder(
+                    c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive
+                )
+                    .addBackgroundColor(ContextCompat.getColor(this@LandingPageActivity, android.R.color.holo_red_dark))
+                    .addActionIcon(R.drawable.ic_delete)
+                    .addSwipeLeftLabel("Swipe to Delete")
+                    .setSwipeLeftLabelColor(ContextCompat.getColor(this@LandingPageActivity, android.R.color.white))
+                    .create()
+                    .decorate()
+
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(binding.taskRecyclerView)
+    }
+
     private fun loadTasks() {
         val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
         val userId = sharedPref.getInt("user_id", -1)
 
         if (userId == -1) {
-            val intent = Intent(this, SignInActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, SignInActivity::class.java))
             finish()
             return
         }
@@ -84,6 +155,7 @@ class LandingPageActivity : AppCompatActivity() {
         }
         cursor.close()
 
+        // Show/hide empty state
         if (taskList.isNotEmpty()) {
             binding.taskRecyclerView.visibility = android.view.View.VISIBLE
             binding.emptyIllustration.visibility = android.view.View.GONE
@@ -94,16 +166,9 @@ class LandingPageActivity : AppCompatActivity() {
             binding.emptyText.visibility = android.view.View.VISIBLE
         }
 
-        val adapter = TaskAdapter(taskList.toMutableList()) { updatedTask ->
-            if (updatedTask.completed) {
-                // Delay agar animasi centang selesai dulu sebelum task dihapus dari tampilan
-                android.os.Handler().postDelayed({
-                    loadTasks()
-                }, 600) // delay 300ms, bisa kamu ubah sesuai durasi animasi
-            }
-        }
-
-        binding.taskRecyclerView.adapter = adapter
-        binding.taskRecyclerView.layoutManager = LinearLayoutManager(this)
+        // Update data in adapter
+        adapter.taskList.clear()
+        adapter.taskList.addAll(taskList)
+        adapter.notifyDataSetChanged()
     }
 }

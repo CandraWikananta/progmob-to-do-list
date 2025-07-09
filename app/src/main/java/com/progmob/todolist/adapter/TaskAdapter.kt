@@ -37,7 +37,7 @@ private fun formatDate(inputDate: String): String {
 }
 
 class TaskAdapter(
-    private val taskList: MutableList<TaskModel>,
+    val taskList: MutableList<TaskModel>,
     private val onItemClick: (TaskModel) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
@@ -117,4 +117,23 @@ class TaskAdapter(
     }
 
     override fun getItemCount(): Int = taskList.size
+
+    fun deleteTaskAndRemoveAt(position: Int, dbHelper: DatabaseHelper): Boolean {
+        val task = taskList[position]
+        val result = dbHelper.deleteTask(task.id)
+        return if (result > 0) {
+            taskList.removeAt(position)
+            notifyItemRemoved(position)
+
+            // Cek apakah taskList sekarang kosong
+            if (taskList.isEmpty()) {
+                // Panggil callback untuk trigger loadTasks (dari Activity)
+                onItemClick(task.copy(completed = false)) // Bisa digunakan sebagai trigger
+            }
+
+            true
+        } else {
+            false
+        }
+    }
 }
