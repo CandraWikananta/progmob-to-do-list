@@ -34,13 +34,25 @@ class LandingPageActivity : AppCompatActivity() {
         setupRecyclerView()
         loadTasks()
 
+        // tombol add task
         binding.addTask.setOnClickListener {
             startActivity(Intent(this, CreateTaskActivity::class.java))
             finish()
         }
 
+        // tombol view completed task
         binding.viewCompletedText.setOnClickListener {
             startActivity(Intent(this, CompletedTaskActivity::class.java))
+        }
+
+        // tombol create category
+        binding.btnCreateCategory.setOnClickListener {
+            val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+            val userId = sharedPref.getInt("user_id", -1)
+
+            val intent = Intent(this, NewCategoryActivity::class.java)
+            intent.putExtra("user_id", userId)
+            startActivity(intent)
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->

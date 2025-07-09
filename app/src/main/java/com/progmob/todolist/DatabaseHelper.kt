@@ -11,7 +11,7 @@ class DatabaseHelper (private val context: Context):
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION){
     companion object{
         private const val DATABASE_NAME = "toDoList.db"
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 5
 
         // Tabel User
         private const val USER_TABLE = "user_tb"
@@ -24,7 +24,7 @@ class DatabaseHelper (private val context: Context):
         private const val CATEGORY_TABLE = "category_tb"
         private const val CATEGORY_ID = "id"
         private const val CATEGORY_NAME = "name"
-        private const val CATEGORY_COLOR = "color"
+        private const val CATEGORY_USER_ID = "user_id"
 
         // Tabel Task
         private const val TASK_TABLE = "task_tb"
@@ -52,8 +52,9 @@ class DatabaseHelper (private val context: Context):
         val createCategoryTable = """
             CREATE TABLE $CATEGORY_TABLE (
                 $CATEGORY_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                ${CATEGORY_NAME}_NAME TEXT,
-                $CATEGORY_COLOR TEXT
+                $CATEGORY_NAME TEXT,
+                $CATEGORY_USER_ID INTEGER,
+                FOREIGN KEY ($CATEGORY_USER_ID) REFERENCES $USER_TABLE($USER_ID)
             )
         """.trimIndent()
 
@@ -196,5 +197,15 @@ class DatabaseHelper (private val context: Context):
         val db = this.writableDatabase
         return db.delete(TASK_TABLE, "$TASK_USER_ID = ? AND $TASK_COMPLETED = 1", arrayOf(userId.toString()))
     }
+
+    fun insertCategory(name: String, userId: Int): Long {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put("name", name)
+            put("user_id", userId)
+        }
+        return db.insert("category_tb", null, values)
+    }
+
 
 }
