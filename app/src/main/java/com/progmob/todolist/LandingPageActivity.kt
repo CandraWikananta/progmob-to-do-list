@@ -94,7 +94,6 @@ class LandingPageActivity : AppCompatActivity() {
             }
         }
 
-        // Opsional: set item aktif di bottom nav (highlight menu saat ini)
         binding.bottomNav.selectedItemId = R.id.nav_tasks
     }
 
@@ -103,12 +102,18 @@ class LandingPageActivity : AppCompatActivity() {
         loadTasks()
     }
 
+    // set up recycler view untuk menampilkan task
     private fun setupRecyclerView() {
-        adapter = TaskAdapter(mutableListOf()) {
-            android.os.Handler().postDelayed({
+        adapter = TaskAdapter(
+            taskList = mutableListOf(),
+            onCheckedChanged = { task ->
                 loadTasks()
-            }, 600)
-        }
+            },
+            onItemClick = { task ->
+                val dialog = TaskDetailDialog(task, isCompleted = false)
+                dialog.show(supportFragmentManager, "TaskDetailDialog")
+            }
+        )
 
         binding.taskRecyclerView.adapter = adapter
         binding.taskRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -172,11 +177,12 @@ class LandingPageActivity : AppCompatActivity() {
                 icon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
                 icon.draw(c)
 
-                val paint = Paint()
-                paint.color = ContextCompat.getColor(this@LandingPageActivity, android.R.color.white)
-                paint.textSize = 36f
-                paint.isAntiAlias = true
-                paint.textAlign = Paint.Align.RIGHT
+                val paint = Paint().apply {
+                    color = ContextCompat.getColor(this@LandingPageActivity, android.R.color.white)
+                    textSize = 36f
+                    isAntiAlias = true
+                    textAlign = Paint.Align.RIGHT
+                }
 
                 val text = "Swipe to Delete"
                 val textX = iconLeft - 16f
@@ -232,6 +238,7 @@ class LandingPageActivity : AppCompatActivity() {
             binding.emptyIllustration.visibility = View.VISIBLE
             binding.emptyText.visibility = View.VISIBLE
         }
+
 
         adapter.taskList.clear()
         adapter.taskList.addAll(taskList)

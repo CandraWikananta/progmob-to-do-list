@@ -8,13 +8,16 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 
-class TaskDetailDialog(private val task: TaskModel) : DialogFragment() {
+class TaskDetailDialog(
+    private val task: TaskModel,
+    private val isCompleted: Boolean = false  // tambahkan flag
+) : DialogFragment() {
 
     private lateinit var databaseHelper: DatabaseHelper
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE) // Menghilangkan title
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         return dialog
     }
 
@@ -43,12 +46,16 @@ class TaskDetailDialog(private val task: TaskModel) : DialogFragment() {
         val categoryName = databaseHelper.getCategoryNameByTaskId(task.id)
         categoryText.text = "Category: $categoryName"
 
-        // Tombol Edit
-        editButton.setOnClickListener {
-            val intent = Intent(requireContext(), EditTaskActivity::class.java)
-            intent.putExtra("TASK_ID", task.id)
-            startActivity(intent)
-            dismiss()
+        // Sembunyikan tombol edit jika task completed
+        if (isCompleted) {
+            editButton.visibility = View.GONE
+        } else {
+            editButton.setOnClickListener {
+                val intent = Intent(requireContext(), EditTaskActivity::class.java)
+                intent.putExtra("TASK_ID", task.id)
+                startActivity(intent)
+                dismiss()
+            }
         }
 
         return view
@@ -63,3 +70,4 @@ class TaskDetailDialog(private val task: TaskModel) : DialogFragment() {
         dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
     }
 }
+

@@ -74,31 +74,33 @@ class CompletedTaskActivity : AppCompatActivity() {
                 val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
                 val title = cursor.getString(cursor.getColumnIndexOrThrow("title"))
                 val description = cursor.getString(cursor.getColumnIndexOrThrow("description"))
-                val category = cursor.getInt(cursor.getColumnIndexOrThrow("category_id"))
+                val categoryId = cursor.getInt(cursor.getColumnIndexOrThrow("category_id"))
                 val priority = cursor.getString(cursor.getColumnIndexOrThrow("priority"))
                 val dueDate = cursor.getString(cursor.getColumnIndexOrThrow("due_date"))
                 val dueTime = cursor.getString(cursor.getColumnIndexOrThrow("due_time"))
                 val completed = true
 
-                val categoryName = when (category) {
-                    1 -> "Personal"
-                    2 -> "Kuliah"
-                    3 -> "Kerja"
-                    else -> "Lainnya"
-                }
+                val categoryName = databaseHelper.getCategoryNameById(categoryId)
 
                 completedTasks.add(TaskModel(id, title, description, categoryName, priority, dueDate, dueTime, completed))
             } while (cursor.moveToNext())
         }
         cursor.close()
 
-        val adapter = TaskAdapter(completedTasks.toMutableList()) { task ->
-            // Delay agar animasi uncheck terlihat sebelum task dihapus dari list
-            Handler(Looper.getMainLooper()).postDelayed({
-                databaseHelper.updateTaskCompleted(task.id, false)
-                loadCompletedTasks()
-            }, 600) // Delay 600ms agar animasi uncheck selesai dulu
-        }
+
+        val adapter = TaskAdapter(
+            taskList = completedTasks.toMutableList(),
+            onCheckedChanged = { task ->
+                // Saat user uncheck task (dipindahkan ke landing page), reload ulang
+                Handler(Looper.getMainLooper()).postDelayed({
+                    loadCompletedTasks()
+                }, 600)
+            },
+            onItemClick = { task ->
+                val dialog = TaskDetailDialog(task, isCompleted = true)
+                dialog.show(supportFragmentManager, "TaskDetailDialog")
+            }
+        )
 
         binding.completedRecyclerView.adapter = adapter
         binding.completedRecyclerView.layoutManager = LinearLayoutManager(this)

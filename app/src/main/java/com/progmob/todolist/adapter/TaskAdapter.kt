@@ -38,6 +38,7 @@ private fun formatDate(inputDate: String): String {
 
 class TaskAdapter(
     val taskList: MutableList<TaskModel>,
+    private val onCheckedChanged: (TaskModel) -> Unit,
     private val onItemClick: (TaskModel) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
@@ -64,13 +65,9 @@ class TaskAdapter(
         holder.taskDateText.text = "${formatDate(task.dueDate)} | ${task.dueTime}"
         holder.taskPriorityText.text = task.priority
 
-        // Hindari listener ter-trigger otomatis karena reuse
         holder.taskCheckbox.setOnCheckedChangeListener(null)
-
-        // Set status
         holder.taskCheckbox.isChecked = task.completed
 
-        // Fungsi strike-through
         fun updateStrikeThrough(view: TextView, isCompleted: Boolean) {
             view.paintFlags = if (isCompleted) {
                 view.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
@@ -84,35 +81,32 @@ class TaskAdapter(
         updateStrikeThrough(holder.taskDateText, task.completed)
         updateStrikeThrough(holder.taskPriorityText, task.completed)
 
-        // Listener untuk checkbox
+        // Checkbox logic
         holder.taskCheckbox.setOnCheckedChangeListener { _, isChecked ->
             val db = DatabaseHelper(holder.itemView.context)
             db.updateTaskCompleted(task.id, isChecked)
 
-            // Update local model
             val updatedTask = task.copy(completed = isChecked)
 
             if (isChecked) {
-                // Delay agar animasi centang terlihat sebelum dihapus
                 Handler(Looper.getMainLooper()).postDelayed({
                     val currentPosition = holder.adapterPosition
                     if (currentPosition != RecyclerView.NO_POSITION) {
                         taskList.removeAt(currentPosition)
                         notifyItemRemoved(currentPosition)
-                        onItemClick(updatedTask)
+                        onCheckedChanged(updatedTask)
                     }
-                }, 600) // delay animasi centang (0.6 detik)
+                }, 600)
             } else {
-                // Jika di-uncheck, update langsung
                 taskList[position] = updatedTask
                 notifyItemChanged(position)
-                onItemClick(updatedTask)
+                onCheckedChanged(updatedTask)
             }
         }
 
+        // Item click (Detail dialog)
         holder.itemView.setOnClickListener {
-            val dialog = TaskDetailDialog(task)
-            dialog.show((it.context as AppCompatActivity).supportFragmentManager, "TaskDetailDialog")
+            onItemClick(task)
         }
     }
 
@@ -125,10 +119,8 @@ class TaskAdapter(
             taskList.removeAt(position)
             notifyItemRemoved(position)
 
-            // Cek apakah taskList sekarang kosong
             if (taskList.isEmpty()) {
-                // Panggil callback untuk trigger loadTasks (dari Activity)
-                onItemClick(task.copy(completed = false)) // Bisa digunakan sebagai trigger
+                onCheckedChanged(task.copy(completed = false))
             }
 
             true
@@ -137,3 +129,4 @@ class TaskAdapter(
         }
     }
 }
+
