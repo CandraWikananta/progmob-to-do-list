@@ -76,6 +76,15 @@ class ProfileActivity : AppCompatActivity() {
             binding.tvName.text = username
         }
 
+        if (userId != -1) {
+            val db = DatabaseHelper(this)
+            val completedCount = db.getCompletedTaskCount(userId)
+            val remainingCount = db.getRemainingTaskCount(userId)
+
+            binding.tvCompletedCount.text = completedCount.toString()
+            binding.tvTaskLeft.text = remainingCount.toString()
+        }
+
 
     }
 }

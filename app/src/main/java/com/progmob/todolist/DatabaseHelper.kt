@@ -290,4 +290,35 @@ class DatabaseHelper (private val context: Context):
         return username
     }
 
+    // menghitung task yang sudah selesai
+    fun getCompletedTaskCount(userId: Int): Int {
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT COUNT(*) FROM $TASK_TABLE WHERE user_id = ? AND completed = 1",
+            arrayOf(userId.toString())
+        )
+        var count = 0
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0)
+        }
+        cursor.close()
+        return count
+    }
+
+    // menghitung task tersisa
+    fun getRemainingTaskCount(userId: Int): Int {
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT COUNT(*) FROM $TASK_TABLE WHERE user_id = ? AND completed = 0",
+            arrayOf(userId.toString())
+        )
+        var count = 0
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0)
+        }
+        cursor.close()
+        return count
+    }
+
+
 }
