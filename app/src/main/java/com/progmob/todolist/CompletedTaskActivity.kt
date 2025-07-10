@@ -64,6 +64,7 @@ class CompletedTaskActivity : AppCompatActivity() {
         val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
         val userId = sharedPref.getInt("user_id", -1)
 
+        // jika user id tidak ditemukan akan dihentikan
         if (userId == -1) return
 
         val cursor = databaseHelper.getCompletedTasks(userId)

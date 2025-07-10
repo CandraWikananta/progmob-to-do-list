@@ -79,7 +79,6 @@ class LandingPageActivity : AppCompatActivity() {
         binding.bottomNav.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_tasks -> {
-                    // Sudah di halaman tasks
                     true
                 }
                 R.id.nav_profile -> {

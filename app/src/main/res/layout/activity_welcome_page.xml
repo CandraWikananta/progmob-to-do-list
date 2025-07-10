@@ -65,7 +65,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor."
+                        android:text="Quickly add and organize your tasks with just a few taps. A simple interface lets you stay focused on what matters."
                         android:textSize="13sp"/>
                 </LinearLayout>
 
@@ -100,7 +100,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor."
+                        android:text="Never miss a deadline again. Get smart reminders to help you stay on track and productive."
                         android:textSize="13sp"/>
                 </LinearLayout>
             </LinearLayout>
@@ -133,7 +133,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor."
+                        android:text="Enjoy a clean, modern design with visually appealing themes that enhance your user experience."
                         android:textSize="13sp"/>
                 </LinearLayout>
             </LinearLayout>

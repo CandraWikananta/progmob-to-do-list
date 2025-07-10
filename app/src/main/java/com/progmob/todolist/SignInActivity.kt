@@ -35,6 +35,7 @@ class SignInActivity : AppCompatActivity() {
         }
     }
 
+    // mengambil user id dan simpan dalam sharedpref
     private fun loginDatabase(username:String, password:String){
         val userId = databaseHelper.getUserId(username, password) // Ambil user_id
         if (userId != -1) {
